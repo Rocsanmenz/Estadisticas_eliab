@@ -1,63 +1,61 @@
-import { StyleSheet, View } from 'react-native';
-import { CartesianChart, Bar } from "victory-native";
+import React, { useState, useEffect } from 'react';
+import { StyleSheet, View, ScrollView, Button } from 'react-native';
+import GraficoBarras from './components/GraficoBarras';
+import Formulario from './components/Formulario';
 
-import { LinearGradient, useFont, vec } from "@shopify/react-native-skia"
 
-const DATA = [
-  { x: 'Ene', y: 2 },
-  { x: 'Feb', y: 11 },
-  { x: 'Mar', y: 23 },
-  { x: 'Abr', y: 22 },
-  { x: 'May', y: 34 },
-  { x: 'Jun', y: 25 },
-  { x: 'Jul', y: 39 },
-  { x: 'Ago', y: 38 },
-  { x: 'Sep', y: 25 },
-  { x: 'Oct', y: 31 },
-  { x: 'Nov', y: 20 },
-  { x: 'Dic', y: 22 },
+import { collection, getDocs, query } from 'firebase/firestore';
+import db from './Firebase/DB';
+
+// Datos iniciales
+const data2 = [
+  { x: '1', y: 0 },
+  { x: '2', y: 0 },
+  { x: '3', y: 0 },
 ];
 
 export default function App() {
+  const [data, setData] = useState(data2); // Inicializa con datos iniciales
+  const [bandera, setBandera] = useState(false); // Variable bandera
 
-  const font = useFont(require("./src/fonts/Roboto-Regular.ttf"))
+  useEffect(() => {
+
+    const recibirDatos = async () => {
+      try {
+        const q = query(collection(db, "personas"));
+        const querySnapshot = await getDocs(q);
+        const d = [];
+
+        querySnapshot.forEach((doc) => {
+          const datosBD = doc.data();
+          const { nombre, salario } = datosBD;
+
+          if (typeof salario === 'number' && nombre) {
+            d.push({ x: nombre, y: salario });
+          }
+        });
+
+        setData(d);
+        console.log(d);
+      } catch (error) {
+        console.error("Error al obtener documentos: ", error);
+      }
+    };
+
+    recibirDatos(); 
+  }, [bandera]);
 
   return (
     <View style={styles.container}>
-      <View style={{width: '100%', height: 400}}>
-        <CartesianChart 
-          data={DATA}
-          xKey="x"
-          yKeys={["y"]}
-          padding={10}
-          domainPadding={{ left: 15, right: 15, top: 10 }}
-          axisOptions={{
-            tickCount: { x: 12, y: 20 },
-            font: font,
-            labelPosition: 'outset',
-          }}
-        >
-          {({ points, chartBounds }) => (
-            <Bar
-              points={points.y}
-              chartBounds={chartBounds}
-              color="green"
-              innerPadding={0.1}
-              roundedCorners={{ topLeft: 10, topRight: 10 }}
-              labels={{ position: "top", font: font, color: "orange" }}
-            >
-              <LinearGradient
-                start={vec(0, 0)} // El inicio y el final son vectores que representan la dirección del degradado.
-                end={vec(0, 500)}
-                colors={[ // Los colores son un array de strings que representan los colores del degradado.
-                  "#a78bfa",
-                  "#a78bfa50" // El segundo color es el mismo que el primero, pero con un valor alfa del 50%.
-                ]}
-              />
-            </Bar>
-          )}
-        </CartesianChart>
-      </View>
+      <ScrollView contentContainerStyle={styles.scrollView}>
+        {data.length > 0 && (
+          <Formulario setBandera={setBandera}/>
+        )}
+
+        <View style={styles.graphContainer}>
+          <GraficoBarras data={data} />
+        </View>
+      </ScrollView>
     </View>
   );
 }
@@ -65,9 +63,13 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    margin: 10,
     backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
+  },
+  scrollView: {
+    padding: 10,
+  },
+  graphContainer: {
+    marginTop: 10,
+    padding: 10,
   },
 });

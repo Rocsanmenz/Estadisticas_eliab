@@ -1,57 +1,43 @@
+import React, { useState, useEffect } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { CartesianChart, Bar } from "victory-native";
+import { LinearGradient, vec, useFont } from "@shopify/react-native-skia";
 
-import { LinearGradient, useFont, vec } from "@shopify/react-native-skia"
 
-const DATA = [
-  { x: 'Ene', y: 2 },
-  { x: 'Feb', y: 15 },
-  { x: 'Mar', y: 30 },
-  { x: 'Abr', y: 25 },
-  { x: 'May', y: 35 },
-  { x: 'Jun', y: 28 },
-  { x: 'Jul', y: 39 },
-  { x: 'Ago', y: 38 },
-  { x: 'Sep', y: 25 },
-  { x: 'Oct', y: 31 },
-  { x: 'Nov', y: 20 },
-  { x: 'Dic', y: 22 },
-];
+export default function GraficoBarras({data}) {
 
-export default function App() {
-
-  const font = useFont(require("./src/fonts/Roboto-Regular.ttf"))
+  const font = useFont(require("../src/fonts/Roboto-Regular.ttf"));
 
   return (
     <View style={styles.container}>
-      <View style={{width: '100%', height: 400}}>
-        <CartesianChart 
-          data={DATA}
+      <View style={{ width: '100%', height: 300 }}>
+        <CartesianChart
+          data={data}
           xKey="x"
           yKeys={["y"]}
-          padding={10}
-          domainPadding={{ left: 15, right: 15, top: 10 }}
+          padding={5}
+          domainPadding={{ left: 50, right: 50, top: 10 }}
           axisOptions={{
-            tickCount: { x: 12, y: 20 },
+            tickCount: { x: data.length, y: 10 },
             font: font,
-            labelPosition: 'outset',
+            labelPosition: 'outset'
           }}
         >
           {({ points, chartBounds }) => (
             <Bar
               points={points.y}
               chartBounds={chartBounds}
+              innerPadding={0.5}
               color="green"
-              innerPadding={0.1}
               roundedCorners={{ topLeft: 10, topRight: 10 }}
-              labels={{ position: "top", font: font, color: "orange" }}
+              labels={{ position: "top", color: "orange" }}
             >
               <LinearGradient
-                start={vec(0, 0)} // El inicio y el final son vectores que representan la dirección del degradado.
+                start={vec(0, 0)}
                 end={vec(0, 500)}
-                colors={[ // Los colores son un array de strings que representan los colores del degradado.
+                colors={[
                   "#a78bfa",
-                  "#a78bfa50" // El segundo color es el mismo que el primero, pero con un valor alfa del 50%.
+                  "#a78bfa50",
                 ]}
               />
             </Bar>
